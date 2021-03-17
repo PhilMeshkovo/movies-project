@@ -1,44 +1,48 @@
-import {React, Component} from "react"
+import React, {useState, useEffect}from "react"
 import {Movies} from '../components/Movies'
 import {Preloader} from '../components/Preloader'
 import {Search} from '../components/Search'
 
-class Main extends Component {
-    state = {
-        movies: [],
-        loading: true,
-    }
+const API_KEY = process.env.REACT_APP_API_KEY;
 
-    componentDidMount() {
-        fetch('https://www.omdbapi.com/?i=tt3896198&apikey=39703238&s=matrix')
-        .then(response => response.json())
-        .then(data => this.setState({movies: data.Search, loading: false}))
-        .catch((err) => {
-            console.error(err)
-            this.setState({loading: false})
-        })
-    }
+function Main () {
 
-    searchMovies = (str, type = 'all') => {
-            this.setState({loading: true});
-            fetch(`https://www.omdbapi.com/?i=tt3896198&apikey=39703238&s=${str}${
+    const [movies, setMovies] = useState([])
+    const [loading, setLoading] = useState(true)
+
+    const searchMovies = (str, type = 'all') => {
+            setLoading(true);
+            fetch(`https://www.omdbapi.com/?i=tt3896198&apikey=${API_KEY}&s=${str}${
                 type !== 'all' ? `&type=${type}` : ''
             }`
             )
             .then(response => response.json())
-            .then(data => this.setState({movies: data.Search, loading: false}))
+            .then(data => {
+                setMovies(data.Search);
+                setLoading(false);
+            })
             .catch((err) => {
                 console.error(err)
-                this.setState({loading: false})
+                setLoading(false)
             })
+        }
         
-    }
+            useEffect(() => {
+                fetch(`https://www.omdbapi.com/?i=tt3896198&apikey=${API_KEY}&s=matrix`)
+                .then(response => response.json())
+                .then(data => {
+                    setMovies(data.Search);
+                    setLoading(false);
+                })
+                .catch((err) => {
+                    console.error(err)
+                    setLoading(false)
+                })
+            }, [])
  
-    render() {
-        const {movies, loading} = this.state;
         return (
         <main className='container content'> 
-            <Search searchMovies={this.searchMovies}/>
+            <Search searchMovies={searchMovies}/>
             {loading ? (
                 <Preloader />
                 ) : (
@@ -47,7 +51,6 @@ class Main extends Component {
             }
             
         </main>)
-    }
 }
 
 export {Main}
